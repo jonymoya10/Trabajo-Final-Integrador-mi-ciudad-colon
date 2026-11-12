@@ -78,24 +78,7 @@ export default function RootLayout() {
 
         <Stack.Screen name="registro" options={{ title: "Crear cuenta" }} />
 
-        <Stack.Screen name="escanear-qr" options={{ title: "Escanear QR" }} />
-
-        <Stack.Screen
-          name="imagen-comercio"
-          options={{ title: "Imagen del comercio" }}
-        />
-
-        <Stack.Screen name="comercio/[id]" options={{ title: "Comercio" }} />
-
-        <Stack.Screen name="promocion/[id]" options={{ title: "Promoción" }} />
-
-        <Stack.Screen
-          name="modal"
-          options={{
-            presentation: "modal",
-            title: "Modal",
-          }}
-        />
+        <Stack.Screen name="lugar/[id]" options={{ title: "Lugar", headerBackTitle: "Volver" }} />
       </Stack>
 
       <StatusBar style="auto" />

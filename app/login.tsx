@@ -57,7 +57,7 @@ export default function LoginScreen() {
         <Text style={styles.title}>Iniciar sesión</Text>
 
         <Text style={styles.subtitle}>
-          Ingresá para acceder a tus favoritos, reseñas y promociones.
+          Ingresá con tu cuenta.
         </Text>
 
         <Text style={styles.label}>Correo electrónico</Text>

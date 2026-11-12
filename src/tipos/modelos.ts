@@ -1,85 +1,119 @@
+// Tipos de "Mi Ciudad — Guía turística de Colón".
+// Se escriben una sola vez, tal como los define la cátedra, y no se tocan
+// cuando llegue la API.
+
 export interface Coordenadas {
   latitud: number;
   longitud: number;
 }
 
 export interface Horario {
-  dia: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-  abre: string;
-  cierra: string;
+  dia: 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0 = domingo
+  abre: string; // "09:00"
+  cierra: string; // "19:00"
 }
 
-export interface Comercio {
+export interface Audioguia {
+  url: string;
+  duracionSegundos: number;
+  idioma: "es" | "en" | "pt";
+}
+
+export interface Lugar {
   id: string;
   nombre: string;
-  rubroId: string;
+  categoriaId: string;
+  descripcionCorta: string;
   descripcion: string;
-  direccion: string;
   coordenadas: Coordenadas;
-  telefono: string | null;
-  whatsapp: string | null;
-  instagram: string | null;
+  direccion: string;
   imagenes: string[];
-  videoUrl: string | null;
   horarios: Horario[];
-  mediosDePago: string[];
-  puntaje: number;
-  cantidadResenas: number;
+  telefono: string | null;
+  sitioWeb: string | null;
+  precioEntrada: number | null;
+  audioguia: Audioguia | null;
   codigoQr: string | null;
+  accesible: boolean;
   activo: boolean;
+  actualizadoEn: string;
 }
 
-export interface Rubro {
+export interface Categoria {
   id: string;
   nombre: string;
-  icono: string;
-  color: string;
+  icono: string; // nombre del ícono de Ionicons
+  color: string; // hexadecimal
   orden: number;
 }
 
-export interface Promocion {
+export type EstadoEvento = "programado" | "suspendido" | "cancelado" | "finalizado";
+
+export interface Evento {
   id: string;
-  comercioId: string;
   titulo: string;
-  detalle: string;
-  descuento: number | null;
-  desde: string;
-  hasta: string;
+  descripcion: string;
+  lugarId: string | null;
+  direccionLibre: string | null;
+  coordenadas: Coordenadas | null;
+  inicio: string;
+  fin: string | null;
   imagenUrl: string | null;
-  soloApp: boolean;
-  usos: number;
-  activa: boolean;
+  precio: number | null;
+  estado: EstadoEvento;
 }
 
-export interface Resena {
-  id: string;
-  comercioId: string;
-  usuarioId: string;
-  estrellas: 1 | 2 | 3 | 4 | 5;
-  comentario: string;
-  respuesta: string | null;
-  reportada: boolean;
-  creadaEn: string;
-  sincronizada: boolean;
+export interface Preferencias {
+  categoriasFavoritas: string[];
+  avisarProximidad: boolean;
+  radioAvisoMetros: number; // 100, 250 o 500
+  tema: "claro" | "oscuro" | "sistema";
 }
-
-export interface UsoDePromocion {
-  id: string;
-  promocionId: string;
-  usuarioId: string;
-  codigo: string;
-  validadoEn: string | null;
-}
-
-export type Rol = "vecino" | "comercio";
 
 export interface Usuario {
   id: string;
   nombre: string;
   email: string;
-  rol: Rol;
-  comercioId: string | null;
-  favoritos: string[];
-  rubrosDeInteres: string[];
-  avisosActivos: boolean;
+  avatarUrl: string | null;
+  creadoEn: string;
+  preferencias: Preferencias;
+}
+
+export interface Favorito {
+  id: string;
+  usuarioId: string;
+  lugarId: string;
+  creadoEn: string;
+}
+
+export type OrigenVisita = "qr" | "gps" | "manual";
+
+export interface Visita {
+  id: string;
+  usuarioId: string;
+  lugarId: string;
+  fechaHora: string;
+  origen: OrigenVisita;
+  fotoUri: string | null;
+  nota: string | null;
+  sincronizada: boolean;
+}
+
+// Forma de las respuestas de la API
+export interface MetaPaginacion {
+  total: number;
+  pagina: number;
+  porPagina: number;
+}
+
+export interface RespuestaApi<T> {
+  datos: T;
+  meta: MetaPaginacion;
+}
+
+export interface ErrorApi {
+  error: {
+    codigo: string;
+    mensaje: string;
+  };
 }

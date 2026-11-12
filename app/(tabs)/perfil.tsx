@@ -145,12 +145,7 @@ export default function PerfilScreen() {
         <Text style={styles.title}>Mi perfil</Text>
 
         <Text style={styles.descripcion}>
-          Podés consultar comercios y promociones sin iniciar sesión.
-        </Text>
-
-        <Text style={styles.descripcion}>
-          Iniciá sesión para acceder a favoritos, reseñas y promociones
-          asociadas a tu cuenta.
+          Iniciá sesión para ver los datos de tu cuenta.
         </Text>
 
         <Pressable
@@ -176,41 +171,6 @@ export default function PerfilScreen() {
       <Text style={styles.label}>Correo electrónico</Text>
 
       <Text style={styles.descripcion}>{usuario.email}</Text>
-
-      <Text style={styles.label}>Tipo de cuenta</Text>
-
-      <Text style={styles.descripcion}>
-        {usuario.rol === "vecino" ? "Vecino" : "Comercio"}
-      </Text>
-
-      {usuario.rol === "comercio" && (
-        <View style={styles.seccionComercio}>
-          <Text style={styles.seccionTitulo}>Herramientas del comercio</Text>
-
-          <Text style={styles.descripcion}>
-            Escaneá el código QR de un cliente para registrar el uso de una
-            promoción.
-          </Text>
-
-          <Pressable
-            onPress={() => router.push("/escanear-qr")}
-            style={styles.boton}
-            accessibilityRole="button"
-            accessibilityLabel="Escanear código QR"
-          >
-            <Text style={styles.botonTexto}>Escanear código QR</Text>
-          </Pressable>
-
-          <Pressable
-            onPress={() => router.push("/imagen-comercio")}
-            style={styles.boton}
-            accessibilityRole="button"
-            accessibilityLabel="Gestionar imagen del comercio"
-          >
-            <Text style={styles.botonTexto}>Gestionar imagen del comercio</Text>
-          </Pressable>
-        </View>
-      )}
 
       <Pressable
         onPress={manejarCerrarSesion}
@@ -254,17 +214,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
-  seccionComercio: {
-    marginTop: 12,
-    paddingTop: 16,
-    borderTopWidth: 1,
-  },
 
-  seccionTitulo: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginBottom: 8,
-  },
 
   boton: {
     marginTop: 12,

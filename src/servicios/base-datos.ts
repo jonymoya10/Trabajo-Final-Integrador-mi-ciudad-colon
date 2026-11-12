@@ -7,40 +7,21 @@ export async function obtenerBaseDatos(): Promise<SQLite.SQLiteDatabase> {
     return baseDatos;
   }
 
-  baseDatos = await SQLite.openDatabaseAsync("directorio-comercios.db");
+  baseDatos = await SQLite.openDatabaseAsync("app.db");
 
   return baseDatos;
 }
 
+// Crea las tablas locales. Agregar acá las que necesite la app nueva.
 export async function inicializarBaseDatos(): Promise<void> {
   const db = await obtenerBaseDatos();
 
   await db.execAsync(`
     PRAGMA journal_mode = WAL;
 
-    CREATE TABLE IF NOT EXISTS usos_promociones (
-      id TEXT PRIMARY KEY NOT NULL,
-      promocion_id TEXT NOT NULL,
-      usuario_id TEXT NOT NULL,
-      codigo TEXT NOT NULL,
-      validado_en TEXT NOT NULL
-    );
-
     CREATE TABLE IF NOT EXISTS preferencias (
       clave TEXT PRIMARY KEY NOT NULL,
       valor TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS comercios_cache (
-      id TEXT PRIMARY KEY NOT NULL,
-      datos TEXT NOT NULL,
-      actualizado_en TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS promociones_cache (
-      id TEXT PRIMARY KEY NOT NULL,
-      datos TEXT NOT NULL,
-      actualizado_en TEXT NOT NULL
     );
   `);
 }

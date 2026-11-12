@@ -73,7 +73,7 @@ export default function RegistroScreen() {
         <Text style={styles.title}>Crear cuenta</Text>
 
         <Text style={styles.subtitle}>
-          Registrate para acceder a favoritos, reseñas y promociones.
+          Creá tu cuenta.
         </Text>
 
         <Text style={styles.label}>Nombre</Text>

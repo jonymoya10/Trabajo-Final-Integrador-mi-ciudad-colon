@@ -1,39 +1,40 @@
 import { Horario } from "../src/tipos/modelos";
-import { estaAbiertoAhora } from "../src/utils/horarios";
+import { estaAbiertoAhora, textoDia, textoEstado } from "../src/utils/horarios";
 
-const horariosFerreteria: Horario[] = [
-  { dia: 1, abre: "08:00", cierra: "12:30" },
-  { dia: 1, abre: "16:00", cierra: "20:00" },
+// Martes con dos turnos (cortado al mediodía) y lunes cerrado
+const horarios: Horario[] = [
+  { dia: 2, abre: "08:00", cierra: "12:00" },
+  { dia: 2, abre: "16:00", cierra: "20:00" },
 ];
 
-describe("estaAbiertoAhora", () => {
-  test("devuelve true durante el turno de la mañana", () => {
-    const lunes0930 = new Date(2026, 8, 14, 9, 30);
+// 10/11/2026 es martes y 09/11/2026 es lunes
+const martes = (hora: string) => new Date(`2026-11-10T${hora}:00`);
 
-    expect(estaAbiertoAhora(horariosFerreteria, lunes0930)).toBe(true);
+describe("horarios", () => {
+  it("está abierto dentro de un turno", () => {
+    expect(estaAbiertoAhora(horarios, martes("09:30"))).toBe(true);
+    expect(estaAbiertoAhora(horarios, martes("17:00"))).toBe(true);
   });
 
-  test("devuelve false durante el corte del mediodía", () => {
-    const lunes1400 = new Date(2026, 8, 14, 14, 0);
-
-    expect(estaAbiertoAhora(horariosFerreteria, lunes1400)).toBe(false);
+  it("está cerrado al mediodía, al cierre exacto y de noche", () => {
+    expect(estaAbiertoAhora(horarios, martes("13:00"))).toBe(false);
+    expect(estaAbiertoAhora(horarios, martes("12:00"))).toBe(false);
+    expect(estaAbiertoAhora(horarios, martes("21:00"))).toBe(false);
   });
 
-  test("devuelve true durante el turno de la tarde", () => {
-    const lunes1700 = new Date(2026, 8, 14, 17, 0);
-
-    expect(estaAbiertoAhora(horariosFerreteria, lunes1700)).toBe(true);
+  it("está cerrado un día sin horarios", () => {
+    expect(estaAbiertoAhora(horarios, new Date("2026-11-09T10:00:00"))).toBe(false);
   });
 
-  test("devuelve false fuera del horario de atención", () => {
-    const lunes2200 = new Date(2026, 8, 14, 22, 0);
-
-    expect(estaAbiertoAhora(horariosFerreteria, lunes2200)).toBe(false);
+  it("arma el texto de estado", () => {
+    expect(textoEstado(horarios, martes("09:30"))).toBe("Abierto ahora · cierra 12:00");
+    expect(textoEstado(horarios, martes("13:00"))).toBe("Cerrado · abre a las 16:00");
+    expect(textoEstado(horarios, martes("21:00"))).toBe("Cerrado ahora");
+    expect(textoEstado([], martes("10:00"))).toBe("Sin horario fijo");
   });
 
-  test("devuelve false en un día sin horarios", () => {
-    const domingo1000 = new Date(2026, 8, 13, 10, 0);
-
-    expect(estaAbiertoAhora(horariosFerreteria, domingo1000)).toBe(false);
+  it("arma el texto de cada día de la semana", () => {
+    expect(textoDia(horarios, 2)).toBe("08:00 a 12:00 y 16:00 a 20:00");
+    expect(textoDia(horarios, 1)).toBe("Cerrado");
   });
 });

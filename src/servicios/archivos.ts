@@ -1,6 +1,6 @@
 import { Directory, File, Paths } from "expo-file-system";
 
-const CARPETA_APP = new Directory(Paths.document, "directorio-comercios");
+const CARPETA_APP = new Directory(Paths.document, "app");
 
 export function asegurarCarpetaApp(): void {
   if (!CARPETA_APP.exists) {

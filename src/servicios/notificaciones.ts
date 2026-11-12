@@ -26,21 +26,21 @@ export async function configurarNotificaciones(): Promise<void> {
   }
 
   if (Platform.OS === "android") {
-    await Notifications.setNotificationChannelAsync("promociones", {
-      name: "Promociones",
+    await Notifications.setNotificationChannelAsync("general", {
+      name: "General",
       importance: Notifications.AndroidImportance.DEFAULT,
     });
   }
 }
 
-export async function notificarPromocionRegistrada(
-  tituloPromocion: string,
-  nombreCliente: string,
+export async function mostrarNotificacion(
+  titulo: string,
+  mensaje: string,
 ): Promise<void> {
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: "Promoción registrada",
-      body: `${tituloPromocion} fue registrada para ${nombreCliente}.`,
+      title: titulo,
+      body: mensaje,
       sound: true,
     },
     trigger: null,
