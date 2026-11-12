@@ -10,26 +10,10 @@ Aplicación para el turista que visita Colón (Entre Ríos): lugares, mapa, agen
 
 | Integrante |
 |---|
-| Melina Johanna Lisette Casco |
-| Daniel Marcelo Cisnero |
-| José Ignacio Debuck |
-| Marcos Gabriel Gainza |
-| María Gabriela Olivares Contreras |
-| Matías Vespa |
+|JONATHAN EXEQUIEL MOYANO
 
 ---
 
-## Repositorio y rama de desarrollo
-
-Repositorio principal del grupo:
-
-[github.com/Ranger9707/DesarrolloparaMoviles2026](https://github.com/Ranger9707/DesarrolloparaMoviles2026)
-
-Rama de desarrollo utilizada actualmente:
-
-[`Melina-Casco---Test`](https://github.com/Ranger9707/DesarrolloparaMoviles2026/tree/Melina-Casco---Test)
-
----
 
 ## Entorno de desarrollo
 
