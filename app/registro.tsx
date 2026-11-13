@@ -105,7 +105,7 @@ export default function RegistroScreen() {
         <TextInput
           value={password}
           onChangeText={setPassword}
-          placeholder="Mínimo 6 caracteres"
+          placeholder="Mínimo 8 caracteres"
           secureTextEntry
           autoCapitalize="none"
           style={styles.input}

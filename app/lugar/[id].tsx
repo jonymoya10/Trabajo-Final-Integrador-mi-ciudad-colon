@@ -1,6 +1,6 @@
 import Ionicons from "@react-native-vector-icons/ionicons";
 import { Stack, router, useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useMemo } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -17,9 +17,7 @@ import {
 import { ImagenLugar } from "../../components/ImagenLugar";
 import { Colores, TOQUE_MINIMO } from "../../constants/colores";
 import { NombreIcono } from "../../constants/iconos";
-import { obtenerCategorias } from "../../src/servicios/categorias";
-import { obtenerLugarPorId } from "../../src/servicios/lugares";
-import { Categoria, Lugar } from "../../src/tipos/modelos";
+import { useCategorias, useLugar } from "../../src/consultas/lugares";
 import { formatearDuracion, formatearPrecio } from "../../src/utils/formato";
 import {
   NOMBRES_DIAS,
@@ -34,37 +32,23 @@ import {
 export default function DetalleLugarScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { width } = useWindowDimensions();
-  const [lugar, setLugar] = useState<Lugar | null>(null);
-  const [categoria, setCategoria] = useState<Categoria | undefined>();
-  const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Los parámetros siempre llegan como texto
+  const consultaLugar = useLugar(String(id ?? ""));
+  const consultaCategorias = useCategorias();
 
-  const cargar = useCallback(async () => {
-    setCargando(true);
-    setError(null);
+  const lugar = consultaLugar.data ?? null;
+  const error = consultaLugar.isError && !lugar ? consultaLugar.error.message : null;
 
-    try {
-      const [encontrado, categorias] = await Promise.all([
-        obtenerLugarPorId(String(id)),
-        obtenerCategorias(),
-      ]);
+  const categoria = useMemo(
+    () => consultaCategorias.data?.find((item) => item.id === lugar?.categoriaId),
+    [consultaCategorias.data, lugar?.categoriaId],
+  );
 
-      setLugar(encontrado);
-      setCategoria(categorias.find((item) => item.id === encontrado.categoriaId));
-    } catch (errorDesconocido) {
-      setError(
-        errorDesconocido instanceof Error ? errorDesconocido.message : "No se pudo cargar el lugar.",
-      );
-    } finally {
-      setCargando(false);
-    }
-  }, [id]);
+  const cargar = () => {
+    consultaLugar.refetch();
+  };
 
-  useEffect(() => {
-    cargar();
-  }, [cargar]);
-
-  if (cargando) {
+  if (consultaLugar.isPending) {
     return (
       <View style={styles.centro}>
         <ActivityIndicator size="large" color={Colores.primario} />

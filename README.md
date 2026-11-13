@@ -10,10 +10,9 @@ Aplicación para el turista que visita Colón (Entre Ríos): lugares, mapa, agen
 
 | Integrante |
 |---|
-|JONATHAN EXEQUIEL MOYANO
+| Jonathan Exequiel Moyano |
 
 ---
-
 
 ## Entorno de desarrollo
 
@@ -50,24 +49,35 @@ Aplicación para el turista que visita Colón (Entre Ríos): lugares, mapa, agen
 - **Pensado para el sol y para gente grande:** letra grande, contraste fuerte y botones de al menos 48 px. No hay alturas fijas en los textos, así respeta la letra agrandada del teléfono.
 - **Agenda** y **Mi recorrido** tienen una pantalla provisoria: son de los otros integrantes.
 
-## Datos (hasta que llegue la API de la cátedra)
+## Datos: la API de la cátedra
 
-| Carpeta | Qué hay |
+La app usa la **API de Mi Ciudad** de la cátedra (`api-proyectos-mobile/api-mi-ciudad`, NestJS). Lugares, categorías, ingreso, registro y "Yo" ya salen de ahí.
+
+| Archivo | Qué hace |
 |---|---|
-| `src/tipos/modelos.ts` | Los tipos del documento, tal cual (Lugar, Categoria, Evento, Usuario, Favorito, Visita, respuesta de la API). No se tocan cuando llegue la API |
-| `src/mocks/` | Datos de prueba (`lugares`, `categorias`) tipados con esos tipos |
-| `src/servicios/lugares.ts` | Única puerta a los datos. Es asíncrono y hoy responde con el mock usando la forma de la API (`{ datos, meta }` o `{ error }`). Cuando llegue la API, solo cambia este archivo |
-| `src/utils/horarios.ts` | "Abierto ahora" calculado en el teléfono (turnos cortados, días cerrados) |
-| `src/servicios/api.ts` | Cliente de la API (`fetch` con el token de `expo-secure-store` en `Authorization: Bearer`). La dirección sale de `EXPO_PUBLIC_API_URL` en el archivo `.env`; mientras esté vacía, los servicios usan los mocks |
+| `src/tipos/modelos.ts` | Los tipos del documento, tal cual (Lugar, Categoria, Evento, Usuario, Favorito, Visita, respuesta de la API). Son los mismos que devuelve la API |
+| `src/servicios/api.ts` | Cliente **Axios** único (`create` con `EXPO_PUBLIC_API_URL` y 60 s de espera). Interceptor de pedido: agrega `Authorization: Bearer <token>` desde `expo-secure-store`. Interceptor de respuesta: todo error pasa a `ErrorDeApi` con el `codigo` y el `mensaje` de la API (se muestra tal cual); sin respuesta → "No hay conexión con el servidor."; 401 `NO_AUTENTICADO` → cierra la sesión |
+| `src/servicios/lugares.ts` | `GET /lugares?porPagina=100` y `GET /lugares/:id`. Un lugar dado de baja se trata como inexistente. **Sin API configurada responde con los datos de prueba** de `src/mocks`, con la misma forma |
+| `src/servicios/categorias.ts` | `GET /categorias` (o el mock) |
+| `src/servicios/autenticacion.ts` | `POST /auth/ingreso` y `POST /auth/registro` (campo `contrasena`, mínimo 8 caracteres) y `GET /yo` |
+| `src/consultas/cliente.ts` | **TanStack Query**: `QueryClient` único (montado en `app/_layout.tsx`), `staleTime` 5 min, 2 reintentos (nunca ante un 4xx). Conecta `AppState` con `focusManager` (refresca al volver a la app) y `expo-network` con `onlineManager` (pausa sin señal) |
+| `src/consultas/lugares.ts` | `useLugares`, `useLugar(id)` y `useCategorias`. El detalle se muestra al instante con los datos de la lista (`placeholderData`) y se actualiza con `GET /lugares/:id` |
+| `src/utils/horarios.ts` | "Abierto ahora" calculado en el teléfono (la API no lo manda) |
 
-**Casos difíciles incluidos en los datos de prueba:**
-- lugar sin audioguía y sin teléfono (Playa Paso Vela);
-- descripción larguísima y sin fotos (El Palmar);
-- lugar dado de baja, que no se muestra;
-- categoría sin lugares (Alojamiento);
-- error de red: poner `SIMULAR_ERROR_RED = true` en `src/servicios/lugares.ts`.
+No se usa Zustand: el estado propio de la app es poco (`useState`) y el del servidor lo maneja TanStack Query.
 
-Las fotos de prueba apuntan a `api.colon.tur.ar`, que todavía no existe. Mientras tanto se ve un ícono en su lugar.
+### Conectar la app a la API
+
+1. Levantar la API (en su carpeta, ver su README): `pnpm install`, `pnpm db:reiniciar` y `pnpm dev`. Al arrancar imprime la dirección para el teléfono, por ejemplo `http://192.168.0.17:3000`.
+2. En este proyecto, copiar `.env.example` a **`.env.local`** (no se sube a git) y poner esa dirección: `EXPO_PUBLIC_API_URL=http://192.168.0.17:3000`. **No `localhost`**: en Expo Go, `localhost` es el propio teléfono.
+3. El teléfono y la compu en la misma wifi. Probar en el navegador del celular `http://192.168.0.17:3000/salud`: tiene que decir `"estado":"ok"`. Si no carga, es el firewall de Windows (permitir Node.js en redes privadas).
+4. `npx expo start` (si ya estaba abierto, cerrarlo y volver a abrirlo para que lea `.env.local`).
+
+Usuarios de demo de la API: `lucia@mail.com` / `lucia1234`, `nuevo@demo.ar` / `nuevo1234`.
+
+**Casos difíciles de la API de demo:** `lug-025` con nombre y descripción larguísimos, `lug-003` sin fotos, varios sin teléfono, `cat-bodegas` sin lugares, `lug-026` dado de baja (no aparece) y `lug-009` sin horarios. Para ver el error: `SIMULAR_ERROR_RED = true` en `src/servicios/lugares.ts` (la API responde un 500 a propósito) o frenar la API.
+
+**Sin API** (`EXPO_PUBLIC_API_URL` vacía) la app sigue andando con los datos de prueba de `src/mocks`; el ingreso y el registro avisan que no hay API.
 
 ## Arquitectura
 
@@ -79,18 +89,19 @@ app/
 │   ├── recorrido.tsx
 │   └── perfil.tsx     Yo
 ├── lugar/[id].tsx     Detalle de un lugar
-├── login.tsx · registro.tsx · modal.tsx
+├── login.tsx · registro.tsx
 └── _layout.tsx
 
 components/            LugarCard, FiltroCategorias, ImagenLugar, PantallaPendiente
 constants/             colores, iconos
 src/
-├── mocks/             lugares, categorias
-├── servicios/         lugares, categorias, api, autenticacion, sesion, base-datos, …
+├── consultas/         TanStack Query: cliente, lugares
+├── mocks/             lugares, categorias (cuando no hay API)
+├── servicios/         api (Axios), lugares, categorias, autenticacion, sesion, base-datos, …
 ├── tipos/             modelos
 └── utils/             horarios, formato, distancias
 
-__tests__/             horarios, lugares, distancias
+__tests__/             horarios, lugares, distancias, api
 ```
 
 ---

@@ -1,10 +1,11 @@
 import Ionicons from "@react-native-vector-icons/ionicons";
 import { router } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
   Pressable,
+  RefreshControl,
   StyleSheet,
   Text,
   TextInput,
@@ -14,46 +15,31 @@ import {
 import { FiltroCategorias } from "../../components/FiltroCategorias";
 import { LugarCard } from "../../components/LugarCard";
 import { Colores, TOQUE_MINIMO } from "../../constants/colores";
-import { obtenerCategorias } from "../../src/servicios/categorias";
-import { filtrarLugares, obtenerLugares } from "../../src/servicios/lugares";
+import { useCategorias, useLugares } from "../../src/consultas/lugares";
+import { filtrarLugares } from "../../src/servicios/lugares";
 import { Categoria, Lugar } from "../../src/tipos/modelos";
 
+const SIN_LUGARES: Lugar[] = [];
+const SIN_CATEGORIAS: Categoria[] = [];
+
 // Catálogo de lugares: búsqueda por nombre, filtro por categoría y listado.
-// Se piden todos los lugares una vez y se filtran en memoria.
+// Los lugares se piden una vez a la API (TanStack Query los guarda) y se filtran en memoria.
 export default function LugaresScreen() {
-  const [lugares, setLugares] = useState<Lugar[]>([]);
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const consultaLugares = useLugares();
+  const consultaCategorias = useCategorias();
   const [texto, setTexto] = useState("");
   const [categoriaId, setCategoriaId] = useState<string | null>(null);
-  const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const cargar = useCallback(async () => {
-    setCargando(true);
-    setError(null);
+  const lugares = consultaLugares.data ?? SIN_LUGARES;
+  const categorias = consultaCategorias.data ?? SIN_CATEGORIAS;
 
-    try {
-      const [listaLugares, listaCategorias] = await Promise.all([
-        obtenerLugares(),
-        obtenerCategorias(),
-      ]);
+  const { refetch: refrescarLugares } = consultaLugares;
+  const { refetch: refrescarCategorias } = consultaCategorias;
 
-      setLugares(listaLugares);
-      setCategorias(listaCategorias);
-    } catch (errorDesconocido) {
-      setError(
-        errorDesconocido instanceof Error
-          ? errorDesconocido.message
-          : "No se pudieron cargar los lugares.",
-      );
-    } finally {
-      setCargando(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    cargar();
-  }, [cargar]);
+  const cargar = useCallback(() => {
+    refrescarLugares();
+    refrescarCategorias();
+  }, [refrescarLugares, refrescarCategorias]);
 
   const visibles = useMemo(
     () => filtrarLugares(lugares, { texto, categoriaId }),
@@ -69,7 +55,8 @@ export default function LugaresScreen() {
     router.push({ pathname: "/lugar/[id]", params: { id } });
   }, []);
 
-  if (cargando) {
+  // Cargando: sólo la primera vez, cuando todavía no hay ninguna copia
+  if (consultaLugares.isPending) {
     return (
       <View style={styles.centro}>
         <ActivityIndicator size="large" color={Colores.primario} />
@@ -78,11 +65,14 @@ export default function LugaresScreen() {
     );
   }
 
-  if (error) {
+  // Error: sólo si no hay datos para mostrar (si ya había, se siguen viendo)
+  if (consultaLugares.isError && !consultaLugares.data) {
     return (
       <View style={styles.centro}>
         <Ionicons name="cloud-offline-outline" size={56} color={Colores.error} />
-        <Text style={styles.mensaje}>{error}</Text>
+        <Text style={styles.mensaje}>
+          {consultaLugares.error.message || "No se pudieron cargar los lugares."}
+        </Text>
         <Pressable
           onPress={cargar}
           style={styles.boton}
@@ -105,6 +95,14 @@ export default function LugaresScreen() {
       contentContainerStyle={styles.lista}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
+      refreshControl={
+        <RefreshControl
+          refreshing={consultaLugares.isRefetching}
+          onRefresh={cargar}
+          colors={[Colores.primario]}
+          tintColor={Colores.primario}
+        />
+      }
       initialNumToRender={6}
       windowSize={7}
       ListHeaderComponent={
